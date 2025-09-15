@@ -1,9 +1,79 @@
 import 'package:flutter/material.dart';
-
+import 'package:video_player/video_player.dart';
 import 'homepage.dart';
 
-class OnboardingPage extends StatelessWidget {
+class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
+
+  @override
+  State<OnboardingPage> createState() => _OnboardingPageState();
+}
+
+class _OnboardingPageState extends State<OnboardingPage> {
+  late VideoPlayerController _controller1;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize video controller
+    _controller1 = VideoPlayerController.asset('assets/video/onboar.mp4')
+      ..initialize().then((_) {
+        setState(() {});
+        _controller1.play();
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller1.dispose();
+    super.dispose();
+  }
+
+  Widget buildVideoSlide(VideoPlayerController controller, String title, String description) {
+    return Column(
+      children: [
+        Expanded(
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.elliptical(80, 200),
+              bottomRight: Radius.elliptical(600, 350),
+            ),
+            child: controller.value.isInitialized
+                ? SizedBox(
+                    width: double.infinity, // Memenuhi lebar layar
+                    child: AspectRatio(
+                      aspectRatio: controller.value.aspectRatio,
+                      child: VideoPlayer(controller),
+                    ),
+                  )
+                : const Center(child: CircularProgressIndicator()),
+          ),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          child: Text(
+            description,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black54,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,44 +81,15 @@ class OnboardingPage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Museum Image
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Image.asset(
-                'assets/icon/smb.jpg',
-                height: 250,
-                fit: BoxFit.contain,
+            Expanded(
+              child: buildVideoSlide(
+                _controller1,
+                'Museum SMB II Palembang',
+                'Selamat datang di aplikasi Museum Sultan Mahmud Badaruddin II Palembang. Jelajahi sejarah dan budaya.',
               ),
             ),
             const SizedBox(height: 32),
-            // Title
-            const Text(
-              'Museum SMB II Palembang',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            // Description
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32.0),
-              child: Text(
-                'Selamat datang di aplikasi Museum Sultan Mahmud Badaruddin II Palembang. '
-                'Jelajahi sejarah, budaya, dan koleksi menarik dari masa Kesultanan Palembang.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 40),
-            // Start Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: SizedBox(
@@ -56,11 +97,9 @@ class OnboardingPage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacement(
-                    // ignore: use_build_context_synchronously
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
-                  );
-                  
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepOrange,
@@ -76,6 +115,7 @@ class OnboardingPage extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

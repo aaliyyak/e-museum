@@ -36,6 +36,11 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
   flutter_launcher_icons: ^0.14.4
+  video_player: ^2.9.5
+  google_fonts: ^6.3.0
+  qr_flutter: ^4.1.0
+  uuid: ^4.5.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +72,7 @@ flutter:
     - assets/images/
     - assets/icon/
     - assets/vectors/
+    - assets/video/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -98,5 +104,5 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon/launch.png"
+  image_path: "assets/icon/logo.png"
   min_sdk_android: 21 # disarankan untuk Android 12
