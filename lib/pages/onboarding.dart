@@ -9,23 +9,58 @@ class OnboardingPage extends StatefulWidget {
   State<OnboardingPage> createState() => _OnboardingPageState();
 }
 
-class _OnboardingPageState extends State<OnboardingPage> {
+class _OnboardingPageState extends State<OnboardingPage>
+    with SingleTickerProviderStateMixin {
   late VideoPlayerController _controller1;
+  late AnimationController _micAnimationController;
+  late Animation<Color?> _micColorAnimation;
+  late Animation<double> _micScaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Initialize video controller
+
+    // Video controller
     _controller1 = VideoPlayerController.asset('assets/video/onboar.mp4')
       ..initialize().then((_) {
         setState(() {});
         _controller1.play();
+
+        _controller1.addListener(() {
+          if (_controller1.value.isInitialized &&
+              _controller1.value.position >= _controller1.value.duration &&
+              !_micAnimationController.isAnimating) {
+            // Mulai animasi mic
+            _micAnimationController.repeat(reverse: true);
+            Future.delayed(const Duration(seconds: 3), () {
+              _micAnimationController.stop();
+              _micAnimationController.reset();
+            });
+          }
+        });
       });
+
+    // AnimationController untuk mic (kedip + goyang)
+    _micAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // Color tween mic: deepOrange <-> white (kedip)
+    _micColorAnimation = ColorTween(
+      begin: Colors.deepOrange,
+      end: Colors.white,
+    ).animate(_micAnimationController);
+
+    // Scale tween mic: 1.0 <-> 1.2 (goyang)
+    _micScaleAnimation = Tween<double>(begin: 1.0, end: 1.2)
+        .animate(CurvedAnimation(parent: _micAnimationController, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
     _controller1.dispose();
+    _micAnimationController.dispose();
     super.dispose();
   }
 
@@ -35,12 +70,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
         Expanded(
           child: ClipRRect(
             borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.elliptical(80, 200),
-              bottomRight: Radius.elliptical(600, 350),
+              bottomLeft: Radius.elliptical(80, 250),
+              bottomRight: Radius.elliptical(870, 300),
             ),
             child: controller.value.isInitialized
                 ? SizedBox(
-                    width: double.infinity, // Memenuhi lebar layar
+                    width: double.infinity,
                     child: AspectRatio(
                       aspectRatio: controller.value.aspectRatio,
                       child: VideoPlayer(controller),
@@ -92,27 +127,56 @@ class _OnboardingPageState extends State<OnboardingPage> {
             const SizedBox(height: 32),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepOrange,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              child: Row(
+                children: [
+                  // Mic kecil dengan animasi kedip + goyang
+                  AnimatedBuilder(
+                    animation: _micAnimationController,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _micScaleAnimation.value,
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: _micColorAnimation.value,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.mic, color: Colors.white),
+                            onPressed: () {
+                              // Tambahkan fungsi TTS di sini
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 16),
+                  // Box Next besar
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HomePage()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Next',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Mulai Jelajah',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
-                ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
